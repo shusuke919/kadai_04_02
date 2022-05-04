@@ -17,7 +17,7 @@
   <div>名前：<input name="mytext" type="text" id="uname"></div>
 
 <div>
-  <textarea name="mytext" id="text" cols="30" rouws="10"></textarea> 
+  <textarea id="text" cols="30" rouws="10"></textarea> 
   <button id="send">送信</button>
   <button id="deleteAll">全て削除</button>
 </div>
@@ -27,6 +27,14 @@
 <!-- ↑ firebaseで登録したところを確認できるとこ -->
 <div id="edit"></div>
 
+<!-- アイコン -->
+<!-- <div>
+<ul>
+<li class="imgs" data-img="0"><img src="imgs/buke.png" width="100"></li>
+<li class="imgs" data-img="0"><img src="imgs/tuku.jpg" width="100"></li>
+<li class="imgs" data-img="0"><img src="imgs/caram.png" width="100"></li>
+</ul>
+</div> -->
 
 </div>
 
@@ -72,25 +80,28 @@
 
 
 
-        // バリデーション
+    // バリデーション
 
-        $('form').validate({
+    $('form').validate({
     rules: {
-       mytext:{ required: true }
+    mytext:{ required: true }
       
     },
     //エラーメッセージの設定
     messages: {
-            mytext: {
-                required: 'これは必須項目です！'
-            }
-          }
+    mytext: {
+    required: 'これは必須項目です！'
+    }
+    }
 });
 
 
 
 // 送信ボタン
         $("#send").on("click",function(){
+// バリデーション
+          const Valid = $('form').Valid();
+  if(Valid) {
 
 const unameValue = $("#uname").val();
 const textValue = $("#text").val();
@@ -108,6 +119,7 @@ text: textValue,
 day : now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日' + now.getHours() + '時' + now.getMinutes() + '分'
 }
 
+
 // firebaseにデータを送る処理
 const newPostRef = push(dbRef);
 set(newPostRef, msg);
@@ -118,6 +130,7 @@ set(newPostRef, msg);
 $("#uname").val("");
 $("#text").val("");
 // icon:d
+  }
 
 });
 
