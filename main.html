@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="reset.css" />
+</head>
+<body>
+
+
+<div>
+<form>
+  <div>名前：<input name="mytext" type="text" id="uname"></div>
+
+<div>
+  <textarea name="mytext" id="text" cols="30" rouws="10"></textarea> 
+  <button id="send">送信</button>
+  <button id="deleteAll">全て削除</button>
+</div>
+
+</form>
+<div id="output"></div>
+<!-- ↑ firebaseで登録したところを確認できるとこ -->
+<div id="edit"></div>
+
+
+</div>
+
+
+<!-- jquery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.1/jquery.validate.min.js"></script>
+  <script src="main.js"></script>
+  
+<!-- ここまでjquery -->
+
+  <!--** 以下Firebase **-->
+<script type="module">
+
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    onChildAdded,
+    remove,
+    onChildRemoved,
+  } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDUMnCckr_zbiY-6WFg3GiqNSS6cPLUAT8",
+    authDomain: "gskadai04.firebaseapp.com",
+    databaseURL: "https://gskadai04-default-rtdb.firebaseio.com",
+    projectId: "gskadai04",
+    storageBucket: "gskadai04.appspot.com",
+    messagingSenderId: "282718031301",
+    appId: "1:282718031301:web:9a58b4a9f8b69193fa8fac"
+  };
+  
+  const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); //RealtimeDBに接続
+        const dbRef = ref(db, "chat"); //RealtimeDB内の"chat"を使う
+
+  
+   
+
+
+
+        // バリデーション
+
+        $('form').validate({
+    rules: {
+       mytext:{ required: true }
+      
+    },
+    //エラーメッセージの設定
+    messages: {
+            mytext: {
+                required: 'これは必須項目です！'
+            }
+          }
+});
+
+
+
+// 送信ボタン
+        $("#send").on("click",function(){
+
+const unameValue = $("#uname").val();
+const textValue = $("#text").val();
+
+
+// 入力されているものが取得できているか確認
+console.log(uname, "名前");
+console.log(text, "テキスト");
+
+// データの塊を作る
+const now = new Date();
+const msg ={
+uname: unameValue,
+text: textValue,
+day : now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日' + now.getHours() + '時' + now.getMinutes() + '分'
+}
+
+// firebaseにデータを送る処理
+const newPostRef = push(dbRef);
+set(newPostRef, msg);
+
+
+
+// 入力欄を空にする
+$("#uname").val("");
+$("#text").val("");
+// icon:d
+
+});
+
+// 受信処理を記述する
+onChildAdded(dbRef, function(data){
+
+const msg = data.val();
+const kagi = data.key;
+console.log(kagi, "鍵")
+
+console.log(msg,"dataを取得");
+
+let html = `
+<div class=${kagi}>
+<p>${msg.uname}</p>
+<p>${msg.text}</p>
+<p>${msg.day}</p>
+
+<input type="button" value="削除" class="delete">
+<input type="button" value="更新" class="update">
+
+</div>
+`;
+
+$("#output").append(html);
+
+});
+
+
+// 全件削除
+$(document).on("click","#deleteAll", function(){
+　　const deleteKey = $(this).parent().attr('class');　
+	remove(dbRef);
+});
+
+
+
+//1件ずつ削除する機能
+$(document).on("click",".delete", function(){
+　　const deleteKey = $(this).parent().attr('class');　
+    const dbRef = ref(db,`chat/${deleteKey}`);
+	remove(dbRef);
+});
+
+
+// エンター押されたら送信
+$("#text").on("keydown", function(e){
+console.log(e, "eventだよ");
+
+if(e.keyCode === 13){
+
+  const unameValue = $("#uname").val();
+const textValue = $("#text").val();
+
+// 入力されているものが取得できているか確認
+console.log(uname, "名前");
+console.log(text, "テキスト");
+
+// データの塊を作る
+const msg ={
+uname: unameValue,
+text: textValue,
+}
+
+// firebaseにデータを送る処理
+const newPostRef = push(dbRef);
+set(newPostRef, msg);
+
+
+// 入力欄を空にする
+
+
+}
+});
+
+
+// 更新機能
+$(document).on("click",".update", function(){
+
+  const updateKey = $(this).parent().attr('class');　
+  const dbRef = ref(db,`chat/${updateKey}`);
+
+onChildAdded(dbRef, function(data){
+  
+  const msg = data.val();
+const kagi = data.key;
+console.log(kagi, "鍵")
+
+console.log(msg,"dataを取得");
+
+let html2 = `
+<div class=${kagi}>
+<p></p>
+
+
+<textarea cols="30" rouws="10">${msg}</textarea> 
+<input type="button" value="更新" class="delete">
+
+</div>
+`;
+
+$("#edit").append(html2);
+
+
+
+});
+
+});
+
+
+const a = [
+  { frame:"tarou" , lname:"yamazaki"},
+  { frame:"shusuke" , lname:"honga"},
+  { frame:"yuya" , lname:"matuda"}
+
+
+];
+
+const json = JSON.stringify(a);
+console.log("JSON:" + json)
+const a2 = JSON.parse(json);
+console.log(a2);
+
+
+
+  
+  </script>
+<!-- ここまでがfire base -->
+  
+</body>
+</html>
