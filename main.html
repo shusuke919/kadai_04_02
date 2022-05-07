@@ -16,13 +16,21 @@
 <form>
   <div>名前：<input name="mytext" type="text" id="uname"></div>
 
-<div>
-  <textarea id="text" cols="30" rouws="10"></textarea> 
+  <div>
+  <textarea name="mytext" id="text" cols="30" rouws="10"></textarea> 
+  </div>
+
+  <div>
   <button id="send">送信</button>
-  <button id="deleteAll">全て削除</button>
 </div>
 
 </form>
+
+<div>
+  <button id="deleteAll">全て削除</button>
+</div>
+
+
 <div id="output"></div>
 <!-- ↑ firebaseで登録したところを確認できるとこ -->
 <div id="edit"></div>
@@ -76,11 +84,7 @@
         const dbRef = ref(db, "chat"); //RealtimeDB内の"chat"を使う
 
   
-   
-
-
-
-    // バリデーション
+  // バリデーション
 
     $('form').validate({
     rules: {
@@ -97,11 +101,12 @@
 
 
 
+
 // 送信ボタン
         $("#send").on("click",function(){
 // バリデーション
-          const Valid = $('form').Valid();
-  if(Valid) {
+          const valid = $('form').valid();
+  if(valid) {
 
 const unameValue = $("#uname").val();
 const textValue = $("#text").val();
@@ -227,18 +232,42 @@ let html2 = `
 
 
 <textarea cols="30" rouws="10">${msg}</textarea> 
-<input type="button" value="更新" class="delete">
+<input type="button" value="更新" id="updateSelf">
 
 </div>
-`;
+`
 
 $("#edit").append(html2);
 
-
-
 });
 
 });
+
+$(document).on("click", "#updateSelf", function () {
+        
+        const updatePath = $(this).prev().attr("class");
+        const updateKey = $(this).parent().attr("class");
+        const updateValue = $(this).prev().val();
+        const dbRef = ref(db, `chat/${updatePath}`);
+        const updates = {};
+        updates[updateKey] = updateValue;
+
+        // updateValueはコンソールで確認できている
+        // console.log(updates)
+        
+
+          update(dbRef, updates);
+        // ここでエラー表示される
+        
+      });
+
+
+
+
+
+
+
+
 
 
 const a = [
